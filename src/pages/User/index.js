@@ -1,7 +1,16 @@
 import React, {Component} from 'react';
+import {Linking} from 'react-native';
 import PropTypes from 'prop-types';
 
-import {Container, List, Header, Avatar, Name, Bio, Stars} from './styles';
+import {Container} from '../../components/Container';
+import {Header} from '../../components/Header';
+import {Bio} from '../../components/Bio';
+import {Button} from '../../components/Button';
+import {Avatar} from '../../components/Avatar';
+import {Name} from '../../components/Name';
+import {FlatList} from '../../components/FlatList';
+
+import {Context} from './styles';
 
 import api from '../../services/api';
 
@@ -13,11 +22,11 @@ export default class User extends Component {
   static propTypes = {
     navigation: PropTypes.shape({
       getParam: PropTypes.func,
+      navigate: PropTypes.func,
     }).isRequired,
   };
 
   state = {
-    repos: [],
     stars: [],
   };
 
@@ -26,36 +35,47 @@ export default class User extends Component {
 
     const user = navigation.getParam('user');
 
-    const [repo, star] = Promise.all(
-      await api.get(`/users/${user.login}/repos`),
-      await api.get(`/users/${user.login}/starred`)
-    );
+    const star = await api.get(`/users/${user.login}/starred`);
 
-    this.setState({stars: star.data, repos: repo.data});
+    this.setState({stars: star.data});
   }
+
+  handleNavigate = user => {
+    const {navigation} = this.props;
+
+    navigation.navigate('Repository', {user});
+  };
 
   render() {
     const {navigation} = this.props;
-    const {stars, repos} = this.state;
+    const {stars} = this.state;
 
     const user = navigation.getParam('user');
-
     return (
       <Container>
         <Header>
-          <Avatar source={{uri: user.avatar}} />
-          <Name>{user.name}</Name>
-          <Bio>{user.bio}</Bio>
+          <Button onPress={() => this.handleNavigate(user)}>
+            <Avatar source={{uri: user.avatar}} />
+          </Button>
+          <Context>
+            <Name>{user.name}</Name>
+            <Bio>{user.bio}</Bio>
+          </Context>
         </Header>
-        <Stars
+        <FlatList
           data={stars}
           keyExtractor={star => String(star.id)}
-          renderItem={({starItem}) => starItem}
-        />
-        <List
-          data={repos}
-          keyExtractor={repo => String(repo.id)}
-          renderItem={({item}) => item}
+          renderItem={({item}) => (
+            <Header>
+              <Button onPress={() => Linking.openURL(item.owner.html_url)}>
+                <Avatar source={{uri: item.owner.avatar_url}} />
+              </Button>
+              <Context>
+                <Name>{item.name}</Name>
+                <Bio>{item.description}</Bio>
+              </Context>
+            </Header>
+          )}
         />
       </Container>
     );

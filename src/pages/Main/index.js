@@ -5,16 +5,17 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import PropTypes from 'prop-types';
 
+import {Container} from '../../components/Container';
+import {Bio} from '../../components/Bio';
+import {Avatar} from '../../components/Avatar';
+import {Name} from '../../components/Name';
+import {FlatList} from '../../components/FlatList';
+
 import {
-  Container,
   Form,
   Input,
   SubmitButton,
-  List,
   User,
-  Bio,
-  Avatar,
-  Name,
   ProfileButton,
   ProfileButtonText,
 } from './styles';
@@ -90,6 +91,7 @@ export default class Main extends Component {
 
   render() {
     const {users, newUser, loading} = this.state;
+
     return (
       <Container>
         <Form>
@@ -107,19 +109,19 @@ export default class Main extends Component {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Icon name="add" sixe={20} color="#fff" />
+              <Icon name="add" size={20} color="#fff" />
             )}
           </SubmitButton>
         </Form>
 
-        <List
+        <FlatList
           data={users}
           keyExtractor={user => user.login}
           renderItem={({item}) => (
             <User>
               <Avatar source={{uri: item.avatar}} />
               <Name>{item.name}</Name>
-              <Bio>{item.bio}</Bio>
+              <Bio numberOfLines={2}>{item.bio}</Bio>
               <ProfileButton onPress={() => this.handleNavigate(item)}>
                 <ProfileButtonText>Ver Perfil</ProfileButtonText>
               </ProfileButton>
